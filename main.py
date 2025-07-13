@@ -1,6 +1,7 @@
 import pygame
 import sys
 import os
+import time
 
 # Initialize pygame
 pygame.init()
@@ -11,6 +12,9 @@ SCREEN_HEIGHT = 600
 
 # Colors
 BG_COLOR = (192, 192, 192) # Background color
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+GREY = (100, 100, 100)
 
 # Frame rate
 FPS = 60
@@ -33,7 +37,7 @@ class MainCharacter(pygame.sprite.Sprite):
 
         self.image = self.get_sprite(self.current_frame, self.direction_row)
         self.rect = self.image.get_rect(center=(x, y))
-        self.speed = 1
+        self.speed = 2
 
     def get_sprite(self, col, row):
         rect = pygame.Rect(
@@ -43,7 +47,6 @@ class MainCharacter(pygame.sprite.Sprite):
         self.sprite_height
         )
         return self.sprite_sheet.subsurface(rect).copy()
-
 
     def set_sprite(self, col, row):
         self.current_sprite_idx = (col, row)
@@ -97,6 +100,16 @@ pygame.display.set_caption("Pokemon Soul by Lil' Dave and BrandonAbe")
 # Create clock for FPS
 clock = pygame.time.Clock()
 
+# Font for menu
+font = pygame.font.SysFont(None, 48)
+
+# Menu options
+menu_options = ["Play", "Settings", "Quit"] #List in python
+selected_index = 0
+
+# Game state
+state = "menu"
+
 # Create main character sprite
 character_image_path = os.path.join("assets", "main_character.png") # assets/main_character.png
 main_character = MainCharacter(
@@ -115,16 +128,57 @@ all_sprites.add(main_character)
 running = True
 while running:
     clock.tick(FPS)
+    screen.fill(BG_COLOR)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+    if state == "menu":
+        if event.type == pygame.KEYDOWN: # Check if keyboard is pressed
+            if event.key == pygame.K_DOWN:
+                selected_index = (selected_index + 1) % len(menu_options) # Wraps around
+            elif event.key == pygame.K_UP:
+                selected_index = (selected_index - 1) % len(menu_options)
+            elif event.key == pygame.K_RETURN:
+                selected_option = menu_options[selected_index]
+                if selected_option == "Play":
+                    state = "play"
+                elif selected_option == "Settings":
+                    state = "settings"
+                elif selected_option == "Quit":
+                    state = "quit"
+                    running = False
+        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            mouse_pos = pygame.mouse.get_pos()
+            for i, option in enumerate(menu_options):
+                text_surface = font.render(option, True, WHITE)
+                text_rect = text_surface.get_rect(center=(SCREEN_WIDTH//2, 250 + i*60))
+                if text_rect.collidepoint(mouse_pos):
+                    if option == "Play":
+                        state = "play"
+                    elif option == "Settings":
+                        state = "settings"
+                    elif option == "Quit":
+                        state = "quit"
+                        running = False
 
-    keys = pygame.key.get_pressed()
-    all_sprites.update(keys)
+    # Render menu
+    if state == "menu":
+        for i, option in enumerate(menu_options):
+            color = GREY if i == selected_index else WHITE
+            text_surface = font.render(option, True, color)
+            text_rect = text_surface.get_rect(center=(SCREEN_WIDTH//2, 250 + i*60))
+            screen.blit(text_surface, text_rect)
 
-    screen.fill(BG_COLOR)
-    all_sprites.draw(screen)
+    # Render game
+    elif state == "play":
+        keys = pygame.key.get_pressed()
+        all_sprites.update(keys)
+        all_sprites.draw(screen)
+
+        # Press ESC to return to menu
+        if keys[pygame.K_ESCAPE]:
+            state = "menu"
 
     pygame.display.flip()
 
