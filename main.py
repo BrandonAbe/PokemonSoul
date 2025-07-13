@@ -4,6 +4,7 @@ import os
 import time
 import settings
 from classes.MainCharacter import MainCharacter
+from classes.NPC import NPC 
 
 # Initialize pygame
 pygame.init()
@@ -35,9 +36,24 @@ main_character = MainCharacter(
     sprite_height=48
 )
 
+# Create NPC sprite
+rival_image_path = os.path.join("assets", "rival_character.png") # assets/main_character.png
+rival = NPC(
+    settings.SCREEN_WIDTH // 2 + 100,
+    settings.SCREEN_HEIGHT // 2,
+    rival_image_path,
+    sprite_width=32,
+    sprite_height=48
+)
+
 # Sprite group for easy updates/draws
 all_sprites = pygame.sprite.Group()
 all_sprites.add(main_character)
+all_sprites.add(rival)
+
+npc_group = pygame.sprite.Group()
+npc_group.add(rival)
+
 
 # Main game loop
 running = True
@@ -88,7 +104,8 @@ while running:
     # Render game
     elif state == "play":
         keys = pygame.key.get_pressed()
-        all_sprites.update(keys)
+        main_character.update(keys, npc_group)  # Player needs npc_group for collision
+        npc_group.update(keys)                  # NPCs can animate if desired
         all_sprites.draw(screen)
 
         # Press ESC to return to menu
