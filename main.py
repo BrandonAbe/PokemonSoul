@@ -4,7 +4,7 @@ import os
 import time
 import settings
 from classes.MainCharacter import MainCharacter
-from classes.NPC import NPC 
+from classes.NPC import NPC
 
 # Initialize pygame
 pygame.init()
@@ -37,7 +37,7 @@ main_character = MainCharacter(
 )
 
 # Create NPC sprite
-rival_image_path = os.path.join("assets", "rival_character.png") # assets/main_character.png
+rival_image_path = os.path.join("assets", "rival_character.png") # assets/rival_character.png
 rival = NPC(
     settings.SCREEN_WIDTH // 2 + 100,
     settings.SCREEN_HEIGHT // 2,
@@ -59,7 +59,7 @@ npc_group.add(rival)
 running = True
 while running:
     clock.tick(settings.FPS)
-    screen.fill(settings.BG_COLOR)
+    screen.fill(settings.BLACK)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -107,6 +107,11 @@ while running:
         main_character.update(keys, npc_group)  # Player needs npc_group for collision
         npc_group.update(keys)                  # NPCs can animate if desired
         all_sprites.draw(screen)
+        if len(sys.argv) > 1 and sys.argv[1] == "-d": # Debug mode
+            # Draw hitboxes for debugging
+            pygame.draw.rect(screen,(0,255,255), main_character.hitbox, 1)
+            for npc in npc_group:
+                pygame.draw.rect(screen,(0,255,0), npc.hitbox, 1)
 
         # Press ESC to return to menu
         if keys[pygame.K_ESCAPE]:
