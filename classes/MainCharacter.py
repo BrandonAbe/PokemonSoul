@@ -34,8 +34,9 @@ class MainCharacter(pygame.sprite.Sprite):
         self.current_sprite_idx = (col, row)
         self.image = self.get_sprite(col, row)
 
-    def update(self, keys):
-        moving = False # Booleans can be True or False
+    def update(self, keys, npc_group):
+        old_rect = self.rect.copy()  # Save current position
+        moving = False
 
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
             self.rect.x -= self.speed
@@ -64,13 +65,17 @@ class MainCharacter(pygame.sprite.Sprite):
         if self.rect.bottom > settings.SCREEN_HEIGHT:
             self.rect.bottom = settings.SCREEN_HEIGHT
 
-        if moving == True:
+        # Check collision with NPCs
+        if pygame.sprite.spritecollideany(self, npc_group):
+            self.rect = old_rect  # Revert to previous position
+
+        # Animation control
+        if moving:
             self.animation_timer += self.animation_speed
             if self.animation_timer >= 1:
                 self.animation_timer = 0
                 self.current_frame = (self.current_frame + 1) % self.frame_count
         else:
-            self.current_frame = 0 # Reset to first frame when idle
+            self.current_frame = 0
 
-        # Update sprite image of main character
         self.image = self.get_sprite(self.current_frame, self.direction_row)
