@@ -38,23 +38,47 @@ class MainCharacter(pygame.sprite.Sprite):
         old_rect = self.rect.copy()  # Save current position
         moving = False
 
+        dx = 0
+        dy = 0
+
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-            self.rect.x -= self.speed
+            dx -= self.speed
             self.direction_row = 1
             moving = True
         if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-            self.rect.x += self.speed
+            dx += self.speed
             self.direction_row = 2
             moving = True
         if keys[pygame.K_UP] or keys[pygame.K_w]:
-            self.rect.y -= self.speed
+            dy -= self.speed
             self.direction_row = 3
             moving = True
         if keys[pygame.K_DOWN] or keys[pygame.K_s]:
-            self.rect.y += self.speed
+            dy += self.speed
             self.direction_row = 0
             moving = True
 
+        # Move X and check collision
+        self.rect.x += dx
+        self.hitbox = self.rect.inflate(0, 0)
+        for npc in npc_group:
+            if self.hitbox.colliderect(npc.hitbox):
+                if dx > 0:  # Moving right
+                    self.rect.right = npc.hitbox.left
+                if dx < 0:  # Moving left
+                    self.rect.left = npc.hitbox.right
+                break
+
+        # Move Y and check collision
+        self.rect.y += dy
+        self.hitbox = self.rect.inflate(0, 0)
+        for npc in npc_group:
+            if self.hitbox.colliderect(npc.hitbox):
+                if dy > 0:  # Moving down
+                    self.rect.bottom = npc.hitbox.top
+                if dy < 0:  # Moving up
+                    self.rect.top = npc.hitbox.bottom
+                break
         # Keep character on screen
         if self.rect.left < 0:
             self.rect.left = 0
@@ -66,8 +90,12 @@ class MainCharacter(pygame.sprite.Sprite):
             self.rect.bottom = settings.SCREEN_HEIGHT
 
         # Check collision with NPCs
-        if pygame.sprite.spritecollideany(self, npc_group):
-            self.rect = old_rect  # Revert to previous position
+        self.hitbox = self.rect.inflate(0,0)
+        for npc in npc_group:
+            if self.hitbox.colliderect(npc.hitbox):
+                self.rect = old_rect # Make sure rectangle of player does not move
+                self.hitbox = self.rect.inflate(0,-10)
+                break
 
         # Animation control
         if moving:
