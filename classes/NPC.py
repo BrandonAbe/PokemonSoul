@@ -15,6 +15,7 @@ class NPC(pygame.sprite.Sprite):
 
         self.image = self.get_sprite(self.current_frame, self.direction_row)
         self.rect = self.image.get_rect(center=(x, y))
+        self.hitbox = self.rect.inflate(0,0) # Adjust hitbox
 
     def get_sprite(self, col, row):
         rect = pygame.Rect(
@@ -25,5 +26,5 @@ class NPC(pygame.sprite.Sprite):
         )
         return self.sprite_sheet.subsurface(rect).copy()
 
-    def update(self, keys):
+    def update(self, *args, **kwargs):
         pass  # For now, the NPC remains static
